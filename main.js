@@ -256,3 +256,4 @@ let data = (function(Vue) {
     }
   });
 })(Vue);
+data.config.devtools = true;
