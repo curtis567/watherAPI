@@ -58,87 +58,91 @@ let data = (function(Vue) {
         if (this.chart != null) {
           this.chart.destroy();
         }
+        if (this.citychart) {
+          axios
+            .get("https://api.openweathermap.org/data/2.5/forecast", {
+              params: {
+                q: this.citychart,
+                units: "Metric",
+                appid: "a904553d0b3d14276c4c58e48d8dc71f"
+              }
+            })
+            .then(response => {
+              this.dates = response.data.list.map(list => {
+                return list.dt_txt;
+              });
 
-        axios
-          .get("https://api.openweathermap.org/data/2.5/forecast", {
-            params: {
-              q: this.citychart,
-              units: "Metric",
-              appid: "a904553d0b3d14276c4c58e48d8dc71f"
-            }
-          })
-          .then(response => {
-            this.dates = response.data.list.map(list => {
-              return list.dt_txt;
-            });
+              this.temps = response.data.list.map(list => {
+                return list.main.temp;
+              });
 
-            this.temps = response.data.list.map(list => {
-              return list.main.temp;
-            });
-
-            var ctx = document.getElementById("weatherChart");
-            this.chart = new Chart(ctx, {
-              type: "line",
-              data: {
-                labels: this.dates,
-                datasets: [
-                  {
-                    label: "Avg. T",
-                    backgroundColor: "rgba(75, 192, 192, 0.5)",
-                    borderColor: "rgb(75, 192, 192)",
-                    fill: false,
-                    data: this.temps
-                  }
-                ]
-              },
-              options: {
-                title: {
-                  display: true,
-                  text: this.citychart.toUpperCase() + " 5 Day Temperature",
-                  fontSize: 15
-                },
-                tooltips: {
-                  callbacks: {
-                    label: function(tooltipItem, data) {
-                      var label =
-                        data.datasets[tooltipItem.datasetIndex].label || "";
-
-                      if (label) {
-                        label += ": ";
-                      }
-
-                      label += Math.floor(tooltipItem.yLabel);
-                      return label + "°C";
-                    }
-                  }
-                },
-                scales: {
-                  xAxes: [
+              var ctx = document.getElementById("weatherChart");
+              this.chart = new Chart(ctx, {
+                type: "line",
+                data: {
+                  labels: this.dates,
+                  datasets: [
                     {
-                      type: "time",
-                      time: {
-                        unit: "day",
-                        tooltipFormat: "MMM. DD / hA"
-                      }
-                    }
-                  ],
-                  yAxes: [
-                    {
-                      ticks: {
-                        callback: function(value, index, values) {
-                          return value + "°C";
-                        }
-                      }
+                      label: "Avg. T",
+                      backgroundColor: "rgba(75, 192, 192, 0.5)",
+                      borderColor: "rgb(75, 192, 192)",
+                      fill: false,
+                      data: this.temps
                     }
                   ]
+                },
+                options: {
+                  title: {
+                    display: true,
+                    text: this.citychart.toUpperCase() + " 5 Day Temperature",
+                    fontSize: 15
+                  },
+                  tooltips: {
+                    callbacks: {
+                      label: function(tooltipItem, data) {
+                        var label =
+                          data.datasets[tooltipItem.datasetIndex].label || "";
+
+                        if (label) {
+                          label += ": ";
+                        }
+
+                        label += Math.floor(tooltipItem.yLabel);
+                        return label + "°C";
+                      }
+                    }
+                  },
+                  scales: {
+                    xAxes: [
+                      {
+                        type: "time",
+                        time: {
+                          unit: "day",
+                          tooltipFormat: "MMM. DD / hA"
+                        }
+                      }
+                    ],
+                    yAxes: [
+                      {
+                        ticks: {
+                          callback: function(value, index, values) {
+                            return value + "°C";
+                          }
+                        }
+                      }
+                    ]
+                  }
                 }
-              }
-            });
-          })
-          .catch(error => {
-            this.errored = true;
-          })
-          .finally(() => ((this.loading = false), (this.citychart = "")));
+              });
+            })
+            .catch(error => {
+              this.errored = true;
+            })
+            .finally(() => ((this.loading = false), (this.citychart = "")));
+        } else {
+          this.loading = false;
+          this.citychart = "";
+        }
       }
     },
     mounted() {
@@ -180,37 +184,40 @@ let data = (function(Vue) {
       let new_get_marker;
       $(".getmap").on("click", function() {
         map.setView([23.7819543, 120.769244], 7.25);
-        axios
-          .get("https://api.openweathermap.org/data/2.5/weather", {
-            params: {
-              q: vm.citymap + ",TW",
-              units: "Metric",
-              appid: "a904553d0b3d14276c4c58e48d8dc71f"
-            }
-          })
-          .then(res => {
-            this.allmap = res.data;
-            if (typeof new_get_marker === "undefined") {
-              new_get_marker = L.marker(
-                [this.allmap.coord.lat, this.allmap.coord.lon],
-                7.25
-              )
-                .addTo(map)
-                .bindTooltip(
-                  this.allmap.name + " " + this.allmap.main.temp + "°C"
-                );
-            } else {
-              new_get_marker
-                .setLatLng([this.allmap.coord.lat, this.allmap.coord.lon])
-                .addTo(map)
-                .bindTooltip(
-                  this.allmap.name + " " + this.allmap.main.temp + "°C"
-                );
-            }
-          })
-          .catch(error => {
-            this.errored = true;
-          });
+        if (vm.citymap) {
+          axios
+            .get("https://api.openweathermap.org/data/2.5/weather", {
+              params: {
+                q: vm.citymap + ",TW",
+                units: "Metric",
+                appid: "a904553d0b3d14276c4c58e48d8dc71f"
+              }
+            })
+            .then(res => {
+              this.allmap = res.data;
+              if (typeof new_get_marker === "undefined") {
+                new_get_marker = L.marker(
+                  [this.allmap.coord.lat, this.allmap.coord.lon],
+                  7.25
+                )
+                  .addTo(map)
+                  .bindTooltip(
+                    this.allmap.name + " " + this.allmap.main.temp + "°C"
+                  );
+              } else {
+                new_get_marker
+                  .setLatLng([this.allmap.coord.lat, this.allmap.coord.lon])
+                  .addTo(map)
+                  .bindTooltip(
+                    this.allmap.name + " " + this.allmap.main.temp + "°C"
+                  );
+              }
+            })
+            .catch(error => {
+              this.errored = true;
+            })
+            .finally(() => (vm.citymap = ""));
+        }
       });
       $(".locationtmap").on("click", function() {
         map
