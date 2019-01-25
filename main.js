@@ -25,7 +25,6 @@ let data = (function(Vue) {
       lon: "",
       citymap: ""
     },
-
     methods: {
       getData: function() {
         if (this.city) {
