@@ -26,7 +26,7 @@ let data = (function(Vue) {
       citymap: ""
     },
     methods: {
-      getData() {
+      getData: function() {
         if (this.city) {
           axios
             .get("https://api.openweathermap.org/data/2.5/weather", {
@@ -53,7 +53,7 @@ let data = (function(Vue) {
             });
         }
       },
-      getChart() {
+      getChart: function() {
         this.loading = true;
         if (this.chart != null) {
           this.chart.destroy();
@@ -145,7 +145,7 @@ let data = (function(Vue) {
         }
       }
     },
-    mounted() {
+    mounted: function() {
       var map = L.map("map").setView([23.7819543, 120.769244], 7.25);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png?{foo}", {
         foo: "bar",
